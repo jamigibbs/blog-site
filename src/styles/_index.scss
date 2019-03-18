@@ -1,0 +1,31 @@
+.post {
+  &__title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -.015em;
+  }
+  &__subtitle {
+    color: rgba(0,0,0,.54);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &__date {
+    color: rgba(0,0,0,.54);
+  }
+  hr {
+    background: hsla(0,0%,0%,0.1);
+    margin-bottom: 2.3rem!important;
+  }
+  &__read-more {
+    font-size: 12px;
+    color: rgba(0,0,0,.54);
+    margin-bottom: 30px;
+    a {
+      color: rgba(0,0,0,.54);
+      &:hover, &:visited {
+        color: black;
+      }
+    }
+  }
+}

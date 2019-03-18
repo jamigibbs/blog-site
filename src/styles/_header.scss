@@ -1,0 +1,70 @@
+.header {
+  height: 65px;
+  background-color: rgba(239, 239, 239, 1);
+  width: 100%;
+  z-index: 10;
+  @include bp('lg') {
+    transition: transform 300ms ease-in-out;
+    transform: translateY(0);
+    position: relative;
+    -webkit-box-shadow: 0px 6px 30px -5px #eeeeee;
+    -moz-box-shadow: 0px 6px 30px -5px #eeeeee;
+         box-shadow: 0px 6px 30px -5px #eeeeee;
+  }
+  &--hidden {
+    transform: translateY(-100%);
+  }
+  &__wrap {
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+    display: table;
+    padding: 0 20px;
+    @include bp('lg'){
+      width: 1032px;
+      padding: 0;
+    }
+  }
+  &__content {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+  &__title {
+    font-size: 24px;
+    letter-spacing: -1px;
+    //margin-top: 20px;
+    margin-bottom: 0;
+    a {
+      box-shadow: none;
+      &:hover {
+        box-shadow: none;
+      }
+    }
+  }
+  &__profile {
+    margin-top: 15px;
+  }
+  &__logo-wrap {
+    display: flex;
+    margin-top: 10px;
+  }
+  &__line {
+    display: none;
+    @include bp('lg'){
+      display: block;
+      border-right: 1px solid rgba(0,0,0,.15);
+      height: 28px;
+      width: 20px;
+      margin-right: 20px;
+      margin-top: 8px;
+    }
+  }
+  &__logo {
+    display: none;
+    @include bp('lg'){
+      display: block;
+      margin-top: 8px;
+    }
+  }
+}
