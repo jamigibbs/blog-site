@@ -148,6 +148,12 @@ For more information on verifying the user's response from the backend, see the 
 
 Thanks for reading! Hopefully this example will help others who have fallen into the same traps I did. You'll likely need to make adjustments based on your project like making a proper check against a host url and setting api key attributes but this should be a great start for your next reCaptcha integrated form component.
 
+Stay tuned for a couple of follow-up posts as well including: 
+
+[ ] - How to integrate reCapatcha v3 into a Lightning Component.
+
+[ ] - reCaptcha v2 & v3 as Lightning Web Components.
+
 ### Other Helpful Resources
 
 - [Google reCAPTCHA developer documentation](https://developers.google.com/recaptcha/intro)
