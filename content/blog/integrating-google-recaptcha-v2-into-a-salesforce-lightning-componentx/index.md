@@ -146,7 +146,7 @@ For more information on verifying the user's response from the backend, see the 
 
 ## Conclusion
 
-Thanks for reading! Hopefully this example will help other who have fallen into a few traps like I did. You'll likely need to make adjustments based on your project like making a proper check against a host url but this should be a great start for your next reCaptcha integrated form component. 
+Thanks for reading! Hopefully this example will help others who have fallen into the same traps I did. You'll likely need to make adjustments based on your project like making a proper check against a host url and setting api key attributes but this should be a great start for your next reCaptcha integrated form component.
 
 ### Other Helpful Resources
 
