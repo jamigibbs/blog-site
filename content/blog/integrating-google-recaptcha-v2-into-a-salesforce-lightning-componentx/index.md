@@ -13,11 +13,11 @@ Google reCAPTCHA is currently available in two different versions; the v2 flavor
 
 With v2, you'll receive a token after the user interacts with the challenge widget and with v3, the token is generated when the page loads making the process hands off for the user (or bot, as it were).
 
-In this post, I'll cover v2 and later I'll go over how to integrate v3.
+In this post, I'll cover v2. In a future post, I'll go over how to integrate v3.
 
 ## What we want to accomplish
 
-There are a few different examples online on how to achieve a v2 integration. In particular, Miguel Duarte's post was very helpful and it got me pretty far with my own solution.
+There are a few different examples online on how to achieve a v2 integration. In particular, [Miguel Duarte's post](http://www.rightitservices.com/resource-hub/item/1319-google-recaptcha-v2-in-salesforce-custom-lightning-component) was very helpful and it got me pretty far with my own solution.
 
 But there are some additional things I needed to handle that weren't covered:
 
@@ -31,7 +31,7 @@ But there are some additional things I needed to handle that weren't covered:
 
 It all starts with a Visualforce page. Using a Visualforce page is the only way to load a 3rd party script in this case (ie. the Google reCaptcha script) because we can't include JS sources into Lightning Components from an external server. Salesforce wants us to add it as a static resource instead.
 
-There are a few reasons  why we wouldn't want to add a 3rd party script as a static resource. It's because either a) the script is getting updated often and by tucking it away as a static resource, we won't have access to those updates without manually doing it ourselves, or b) the script requires that it's being served from their own servers (as a security feature on their part).
+There are a few reasons  why we wouldn't want to add a 3rd party script as a static resource though. It's because either a) the script is getting updated often and by tucking it away as a static resource, we won't have access to those updates without manually doing it ourselves, or b) the script requires that it's being served from their own servers (as a security feature on their part).
 
 By using a Visualforce page, we can load our script through an iFrame and dynamically control its behavior within the form component without compromising on either of those requirements. So that's where we'll start.
 
@@ -41,7 +41,7 @@ The first step will be to create a Visualforce page.
 
 **Required Salesforce settings**
 
-There are a lot of super secret Salesforce settings that'll trip you up as a developer and these two tripped me up pretty hard while I was integrating this so don't skip these steps (they're worth ~3 hours of my life trying to figure them out).
+There are a lot of super secret Salesforce settings that'll trip you up as a developer and these two got me pretty hard so don't skip them (they're worth ~3 hours of my life trying to figure them out).
 
 After you create a new Visualforce page:
 
@@ -85,11 +85,10 @@ This last part is simply sending back to the component a flag to let us know if 
 
 `gist:jamigibbs/7ffda1db5abeb56744a827793a47f48b`
 
-The Google script will automatically create a DOM element with the ID `g-recaptcha-response` for us so we're just collecting the token value that was injected into that element on line 12 in the snippet above. The message we're posting back will be heard in our component where we'll handle if a token is available or not yet.
 
 ## 2. Add an iframe to the Lightning Component
 
-Below is a simple form example with two input fields for Name and Email. The form also includes a submit button, a conditionally displayed error message element, and below that is the iframe we're going to use to display the reCaptcha widget:
+Below is a simple form example with two input fields for Name and Email. The form also includes a submit button, an error message element, and below that is the iframe we're going to use to display the reCaptcha widget:
 
 `gist:jamigibbs/28cf7e014b7cb88190c84c58b9330980`
 
@@ -101,23 +100,20 @@ If you're loading the page in a community with a custom namespace, you must appe
 
 This is another place that we diverge from other examples online. You don't normally need a renderer file for your lighting component but it's useful if you need to interact with the DOM tree after the framework has inserted all of its DOM elements (the `afterRender` lifecycle). 
 
-In our situation, we want to pass the site key to the reCaptcha script only after the iframe has loaded. Otherwise we'll find that the script will load before it has access to the key:
+In our situation, we want to pass the site key to the reCaptcha script only after the iframe is available (and loaded). Otherwise we'll find that the script will fire before it has access to the key:
 
 `gist:jamigibbs/a8f5416718ac320fe3c970c0150216d9`
 
-Here we're getting a reference to the iframe element in the DOM and posting a message to it once it's been loaded. The event message will include our dynamic site key which is set in the component attribute settings in this example (although there are other ways you can store dynamic site keys if something else makes more sense for your project).
+We're getting a reference to the iframe element and posting a message to it once it's loaded. The event message will include our dynamic site key which is set in the component attribute settings in this example (although there are other ways you can store and retrieve a key like in custom metadata. Do whatever makes the most sense for your project).
 
 ## 4. Add an event listener to the component's controller
 
 In the component's controller, we'll need to add an event listener when the component initializes. 
-The `init` method is the perfect place to add those. The messages we'll be listening for are:
-
-1. The current reCatpcha completion state. Has the reCaptcha been done yet?
-2. The token status. Do we have a token available yet?
+The `init` method is the perfect place to add those:
 
 `gist:jamigibbs/643b5da7bfa1073fcd11cfaa738d5d47`
 
-The controller is also a great place to add a method to handle the submit click event. When the user clicks submit, we want to make sure that:
+The controller is also a great place to add a method to handle the submit click event and I've added it above as `submitForm`. When the user clicks submit, we want to make sure that:
 
 1. The form is valid.
 2. The reCaptcha has completed.
@@ -142,11 +138,15 @@ Our helper method is just a standard Apex call and it looks something like this 
 
 ## 6. Server side verification
 
-The last step is to create an Apex method that will take the token generated on the frontend and check it against the secret key. The result of this check should be a success boolean value that we can respond to on the frontend.
+The last step is to create an Apex method that will take the token generated on the frontend and check it against the secret key. In the example above, this is called `c.verifyResponse`. The result of this check should be a success boolean that we can respond to on the frontend.
 
-On the frontend, if we get a successful verification response, we can allow the form to be submitted. If we get an unsuccessful verification response, we can display an error message and deny the user from submitting the form.
+If we get a successful verification, we can allow the form to be submitted. If we get an unsuccessful verification, we can display an error message and deny the user from submitting the form.
 
 For more information on verifying the user's response from the backend, see the [Server Side Validation](https://developers.google.com/recaptcha/docs/verify) docs.
+
+## Conclusion
+
+Thanks for reading! Hopefully this example will help other who have fallen into a few traps like I did. You'll likely need to make adjustments based on your project like making a proper check against a host url but this should be a great start for your next reCaptcha integrated form component. 
 
 ### Other Helpful Resources
 
