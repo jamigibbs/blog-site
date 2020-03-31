@@ -23,16 +23,14 @@ The start of our basic Node server with Websockets looks like this:
 
 `gist:jamigibbs/a0a5a8488ac7e07f203e6870014a7ab0`
 
-As I build out my chat component, the server will expand to accomodate the different websocket events I'm passing to it.
-
-You can see the complete `server.js` file on my [SF Chat Websocket Server](https://github.com/jamigibbs/sf-chat-websocket-server/blob/master/server.js) repo.
+As I continue to build out my chat component, I'll make several additions to this initial server file to accomodate the different websocket events I'm passing to it. You can see the complete `server.js` file on my [SF Chat Websocket Server](https://github.com/jamigibbs/sf-chat-websocket-server/blob/master/server.js) repo.
 
 
 ## Deploying the Server to Heroku
 
 While there are several different ways to deploy your server to Heroku, probably the simplest is to deploy from a Github repo. 
 
-I've already created a repo that you can use to deploy to Heroku directly just by clicking the "Deploy to Heroku" button:
+For this project, I created a repo that you can also use to deploy to Heroku directly just by clicking the "Deploy to Heroku" button:
 
 https://github.com/jamigibbs/sf-chat-websocket-server
 
@@ -50,7 +48,7 @@ For my chat component, I wanted to implement three basic features:
 2. Allow chat users to enter and leave the chatroom.
 3. Display a visual indicator when someone is typing.
 
-So our chat room will look something like this:
+So our chat room will look something like this with active users on the left side, chatroom messages displayed in the center, and an input field below for the current user to add messages to the chatroom:
 
 ![Chat Room](./chat-room.png)
 
@@ -59,7 +57,7 @@ So our chat room will look something like this:
 To keep track of the chat room messages, we'll need to create a single custom object called **Chat Message** (`Chat_Message_c`). On that object, there are two custom fields:
 
 - Content__c (Textarea)
-- User__c (Lookup to the User object)
+- User__c (a lookup to the User object)
 
 Additionally, we'll need to add a custom field to the **User** object called `Chat_Active__c` (Checkbox). We're adding this field to keep track of when a user has entered or left the chatroom.
 
@@ -72,7 +70,7 @@ Now that we have our object and fields setup, there are some Apex queries we'll 
 3. Set chat user active
 4. Set chat user inactive
 
-These are all pretty straight forward SOQL queries especially when we're only dealing with a single chat room. But you'll notice that I'm limiting our messages to only those created `today` which isn't a particuarly realistic chat scenario. Ideally we would be able to handle multiple chat rooms and limit our query to that specific room. Multiple chat rooms was out of scope for this particular exercise so we're just displaying message for the current day.
+These are all pretty straight forward SOQL queries especially when we're only dealing with a single chat room. But you'll notice that I'm limiting our messages to only those created `today` which isn't a particuarly realistic chat scenario. Ideally we would be able to handle multiple chat rooms and limit our query to that specific room. Multiple chat rooms were out of scope for this particular exercise so we're just displaying messages for the current day.
 
 `gist:jamigibbs/af0f89f3190848a346d35c0b072ee680`
 
@@ -82,9 +80,11 @@ You can see the complete `ChatController` class on my [LWC Websocket Chat repo](
 
 Now we can finally connect our component with the Node websocket server we setup earlier. I mentioned before that I'm using [socket.io](https://socket.io/) so the first step is to import the 3rd party script into the component.
 
-The socket.io script will need to be adding as a static resource and loaded from the `resourceUrl` module.
+The socket.io script will need to be added as a static resource and loaded from the `resourceUrl` module.
 
-You'll also need to pass the websocket server url (in our case, it's the Heroku link) from a custom label.
+You'll also need to pass the websocket server url (in our case, it's the Heroku link) from a custom label. The websocket server url will be the Heroku app link but with `wss` protocol instead of `http`. 
+
+For example: `wss://my-heroku-app.herokuapp.com/`:
 
 `gist:jamigibbs/d99d1dbb57508b446d3fd232cb549cee`
 
@@ -116,10 +116,10 @@ When a message is submitted (in this case, the enter key is pressed on the input
 
 Similar to how the chat messages work, we can display when a user enters or leaves the chat room by toggling a `Chat_Active__c` checkbox on their user record and update the sidebar active user list accordingly.
 
-When the user clicks enter or leave the chat, this triggers a socket event chain similar to when we add a new message:
+When the user clicks enter or leave the chat, this triggers a socket event chain similar to when we added a new message:
 
 **websocketChat.js** -- When the user clicks the enter or leave chat button, the user record is updated and we emit the event `userEnteredChat` or `userLeftChat` to our socket server:
-`gist:jamigibbs/a0a5a8488ac7e07f203e6870014a7ab0`
+`gist:jamigibbs/eaf0ca6e0b6c9f318ee44acd2a72e9b5`
 
 **server.js** -- On the websocket server, those events are captured and it sends back to Salesforce a `refreshChatUsers` event:
 `gist:jamigibbs/f1892d5b6f25705839d2a491ec0d89e0`
@@ -131,17 +131,19 @@ When the user clicks enter or leave the chat, this triggers a socket event chain
 
 ### Completed Project
 
-To view the completed chat component that includes all of the features previously mentioned, the project is available for you to install on your own scratch from the following repo:
+To view the completed chat component that includes all of the features previously mentioned, the project is available for you to install on your own scratch org from the following repo:
 
 [https://github.com/jamigibbs/lwc-websocket-chat](https://github.com/jamigibbs/lwc-websocket-chat)
 
-The correspoding node websocket server is also available:
+The correspoding node websocket server is also available here:
 
 [https://github.com/jamigibbs/sf-chat-websocket-server](https://github.com/jamigibbs/sf-chat-websocket-server)
 
 
 ## Final Thoughts
 
-Because we still have to make HTTP requests through the Salesforce server in order to add and fetch records, this isn't truely seemless like it would be if we were also storing data on the websocket server itself. Ideally, we could use websockets for more than just a glorified pubsub where we're just bouncing events back and forth like we are here.
+Because we still have to make HTTP requests through the Salesforce server in order to add and fetch records, this isn't truely seemless like it would be if we were also storing data on the websocket server itself. There isn't a continous data exchange. Ideally, we could use websockets for more than just a pubsub messaging where we're just bouncing events back and forth.
 
-But it has value in "magically" refreshing data for all connected users. This in itself is a pretty cool feature to have. I think the value that brings might need to be weighed against the effort it would take to maintain a separate external server who's only purpose is basically to trigger refreshes though. I could also see some issues with security and the need to implement authentication on the external server before rogue connections could be made.
+But it has value in creating a persistent connection and "magically" refreshing data for all connected users without resorting to long polling the Salesforce server. This in itself is a pretty cool feature. I think the value that brings might need to be weighed against the effort it would take to maintain a separate external server whose only purpose is to trigger a data refresh though. I could also see some issues with security and the need to implement authentication on the external server before rogue connections could be made.
+
+There are a lot of interesting nuances here though and it was fun to experiment with the technology within Salesforce.
