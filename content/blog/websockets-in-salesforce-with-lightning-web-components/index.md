@@ -1,5 +1,5 @@
 ---
-title: "Websocket Chat in Salesforce with Lightning Web Components"
+title: "A Websocket Chat in Salesforce with Lightning Web Components"
 subtitle:
 date: "2020-03-30T01:12:03.284Z"
 description: 
@@ -7,9 +7,9 @@ description:
 
 A websocket connection is a way to exchange data between browser and server with a persistent connection. This type of connection is perfect for applications that require continous data exchange like multiplayer games, collaborative white boards, sports tickers, and chats.
 
-I started to consider websockets in Salesforce when I noticed that their native [Chatter](https://www.salesforce.com/products/chatter/features/) component required a manual refresh before the latest chat messages would display. Why couldn't it automatically refresh the incoming chat messages with websockets?
+I started to consider websockets in Salesforce when I noticed that their native [Chatter](https://www.salesforce.com/products/chatter/features/) component required a manual refresh before the latest chat messages would display. Why couldn't it automatically display the incoming chat messages with websockets?
 
-I discovered that Salesorce databases and their backend language Apex, only supports HTTP/1. Websockets or GRPC(HTTP/2) are bi-directional and not supported by Salesforce natively so you can't achieve that magical refresh with Chatter. Bummer, right?
+I discovered that Salesorce databases and their backend language Apex, only supports HTTP/1. Websockets or GRPC(HTTP/2) are bi-directional and not supported by Salesforce natively so you can't achieve that magical refresh with Chatter using websockets. Bummer, right? (Well, they probably could use [http polling](https://realtimeapi.io/hub/moving-polling-long-polling/) but it's potentially resource intensive and maybe there are other server limitations that I'm not aware of too.)
 
 But there is a way to use Websockets with Salesforce and that's what I set out to experiment with here.
 
@@ -101,13 +101,13 @@ When a message is submitted (in this case, the enter key is pressed on the input
 **websocketChat.html** - The user has entered a message into an input field:
 `gist:jamigibbs/6237b56dc7a832139a19e9dee11644c9`
 
-**websocketChat.js** - When they submit/hit enter, a chat message record is created and on success, we emit the "transmit" socket event:
+**websocketChat.js** - When they submit/press enter, a chat message record is created using the [createRecord](https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.data_salesforce_write) module and on success, we emit the "transmit" socket event:
 `gist:jamigibbs/559e3d39a185e1d1abc797e40d4c89cf`
 
 **server.js** - The server, listening for the "transmit" event, emits another event back to the web component called "chatupdated":
 `gist:jamigibbs/c9a42ccdf13eb9ca215b1d7f9b4e0bd8`
 
-**websocketChat.js (again)** - Now _all_ active components receive this "chatupdated" event which refreshes the messages list to display (nearly) instantaneously the latest message.
+**websocketChat.js (again)** - Now _all_ active components receive this "chatupdated" event which refreshes the messages list to display (nearly) instantaneously the latest message (or however long it takes Salesforce to refresh its cache via [refreshApex](https://developer.salesforce.com/docs/component-library/documentation/en/lwc/apex#data_apex__refresh_cache)):
 `gist:jamigibbs/a98cd7620ffa454316f14b4d2f1798a1`
 
 [![Chat Messaging](./chat-messages.gif)](https://d.pr/i/FRv0mY)
@@ -124,7 +124,7 @@ When the user clicks enter or leave the chat, this triggers a socket event chain
 **server.js** -- On the websocket server, those events are captured and it sends back to Salesforce a `refreshChatUsers` event:
 `gist:jamigibbs/f1892d5b6f25705839d2a491ec0d89e0`
 
-**websocketChat.js (again)** - Finally, our component will refresh the active user list for _all_ users connected to the chat:
+**websocketChat.js (again)** - Finally, our component will refresh the active user list for _all_ users connected to the chat in the same way that we refreshed the chat messages using [refreshApex](https://developer.salesforce.com/docs/component-library/documentation/en/lwc/apex#data_apex__refresh_cache):
 `gist:jamigibbs/44b60652c6c87ee12a3af0cd1986c139`
 
 [![Chat Messaging](./enter-leave-chat.gif)](https://d.pr/i/BYoInf)
@@ -142,8 +142,8 @@ The correspoding node websocket server is also available here:
 
 ## Final Thoughts
 
-Because we still have to make HTTP requests through the Salesforce server in order to add and fetch records, this isn't truely seemless like it would be if we were also storing data on the websocket server itself. There isn't a continous data exchange. Ideally, we could use websockets for more than just a pubsub messaging where we're just bouncing events back and forth.
+Because we still have to make HTTP requests through the Salesforce server in order to add and fetch records, this isn't truely seemless like it would be if we were also storing data on the websocket server itself. There isn't a continous data exchange. Ideally, we could use websockets for more than just a pubsub type service where we're just bouncing events back and forth.
 
-But it has value in creating a persistent connection and "magically" refreshing data for all connected users without resorting to long polling the Salesforce server. This in itself is a pretty cool feature. I think the value that brings might need to be weighed against the effort it would take to maintain a separate external server whose only purpose is to trigger a data refresh though. I could also see some issues with security and the need to implement authentication on the external server before rogue connections could be made.
+But it has value in creating a persistent connection and "magically" refreshing data for all connected users without resorting to polling the Salesforce server. This in itself is a pretty cool feature. I think the value that brings might need to be weighed against the effort it would take to maintain a separate external server whose only purpose is to trigger a data refresh though. I could also see some issues with security and the need to implement authentication on the external server to safeguard against rogue connections.
 
-There are a lot of interesting nuances here though and it was fun to experiment with the technology within Salesforce.
+There are a lot of interesting nuances here though and it was fun to experiment with the technology within Salesforce. Thanks for reading!
