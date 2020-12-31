@@ -11,16 +11,16 @@ class Header extends React.Component {
 
   constructor(props){
     super(props)
-    this.handleScroll = this.handleScroll.bind(this);
+    //this.handleScroll = this.handleScroll.bind(this);
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll)
-    this.header = document.querySelector('.header')
+    //window.addEventListener('scroll', this.handleScroll)
+    //this.header = document.querySelector('.header')
   }
   
   componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll)
+    //window.removeEventListener('scroll', this.handleScroll)
   }
 
   handleScroll() {
