@@ -24,7 +24,7 @@ class Bio extends React.Component {
       <StaticQuery
         query={bioQuery}
         render={data => {
-          const { author, social } = data.site.siteMetadata
+          const { author } = data.site.siteMetadata
           const location = this.props.location ? this.props.location : ''
           const classes = `bio ${location}`
           return (
@@ -45,7 +45,7 @@ class Bio extends React.Component {
                 />
   
                 <div className="bio__content">
-                  Written by <a target="_blank" rel="noopener noreferrer" href="http://jamigibbs.com">{author}</a> who lives and works in Chicago as a developer. &nbsp; <a target="_blank" rel="noopener noreferrer" href={`https://twitter.com/${social.twitter}`}> You should follow her on Twitter</a> 👋
+                  Written by <a target="_blank" rel="noopener noreferrer" href="http://jamigibbs.com">{author}</a> who lives and works in Chicago as a developer. &nbsp; <a target="_blank" rel="noopener noreferrer" href="https://hachyderm.io/@jamigibbs"> You should follow her on Mastodon</a> 👋
                 </div>
               </div>
             </div>
