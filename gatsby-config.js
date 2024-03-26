@@ -12,7 +12,7 @@ module.exports = {
     title: `Journal of Jami Gibbs`,
     author: {
       name: `Jami Gibbs`,
-      summary: `who lives and works in Chicago as a software developer and woodworker.`,
+      summary: `I live and work in Chicago as a software developer and woodworker.`,
     },
     description: `A blog with stuff written by Jami`,
     siteUrl: `https://blog.jamigibbs.com/`,
