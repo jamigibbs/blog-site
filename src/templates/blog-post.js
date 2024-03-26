@@ -1,57 +1,44 @@
-import React from "react"
+import * as React from "react"
 import { Link, graphql } from "gatsby"
 import { DiscussionEmbed } from "disqus-react"
 
-import Header from '../components/header'
 import Bio from "../components/bio"
 import Layout from "../components/layout"
-import SEO from "../components/seo"
-import { rhythm, scale } from "../utils/typography"
+import Seo from "../components/seo"
 
-class BlogPostTemplate extends React.Component {
-  render() {
-    const { data } = this.props
-    const post = this.props.data.markdownRemark
-    const siteTitle = this.props.data.site.siteMetadata.title
-    const { previous, next } = this.props.pageContext
+const BlogPostTemplate = ({
+  data: { previous, next, site, markdownRemark: post },
+  location,
+}) => {
+  const siteTitle = site.siteMetadata?.title || `Title`;
 
-    const disqusShortname = "jamigibbs";
-    const disqusConfig = {
-      identifier: post.id,
-      title: post.frontmatter.title,
-    }
+  const disqusShortname = "jamigibbs";
+  const disqusConfig = {
+    identifier: post.id,
+    title: post.frontmatter.title,
+  }
 
-    return (
-      <div className="post-single">
-        <Header title={siteTitle} logoImage={data.logoImage} />
-        <Layout location={this.props.location} title={siteTitle}>
-        <SEO
-          title={post.frontmatter.title}
-          description={post.frontmatter.description || post.excerpt}
+  return (
+    <Layout location={location} title={siteTitle}>
+      <article
+        className="blog-post"
+        itemScope
+        itemType="http://schema.org/Article"
+      >
+        <header>
+          <h1 itemProp="headline">{post.frontmatter.title}</h1>
+          <p>{post.frontmatter.date}</p>
+        </header>
+        <section
+          dangerouslySetInnerHTML={{ __html: post.html }}
+          itemProp="articleBody"
         />
-        <h1 className="post-single__title">{post.frontmatter.title}</h1>
-        { post.frontmatter.subtitle && 
-          <h2 className="post-single__subtitle">{post.frontmatter.subtitle}</h2>
-        }
-        <p
-          style={{
-            ...scale(-1 / 5),
-            display: `block`,
-            marginBottom: rhythm(1),
-            color: 'rgba(0, 0, 0, 0.54)'
-          }}
-        >
-          {post.frontmatter.date}
-        </p>
-        <div dangerouslySetInnerHTML={{ __html: post.html }} />
-        <hr
-          style={{
-            marginBottom: rhythm(1),
-          }}
-        />
-
-        <Bio location="bio__footer" />
-
+        <hr />
+        <footer>
+          <Bio />
+        </footer>
+      </article>
+      <nav className="blog-post-nav">
         <ul
           style={{
             display: `flex`,
@@ -59,8 +46,6 @@ class BlogPostTemplate extends React.Component {
             justifyContent: `space-between`,
             listStyle: `none`,
             padding: 0,
-            marginLeft: 0,
-            marginTop: '40px'
           }}
         >
           <li>
@@ -78,40 +63,59 @@ class BlogPostTemplate extends React.Component {
             )}
           </li>
         </ul>
+      </nav>
 
-        <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
-      </Layout>
-      </div>
-    )
-  }
+      <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
+    </Layout>
+  )
+}
+
+export const Head = ({ data: { markdownRemark: post } }) => {
+  return (
+    <Seo
+      title={post.frontmatter.title}
+      description={post.frontmatter.description || post.excerpt}
+    />
+  )
 }
 
 export default BlogPostTemplate
 
 export const pageQuery = graphql`
-  query BlogPostBySlug($slug: String!) {
+  query BlogPostBySlug(
+    $id: String!
+    $previousPostId: String
+    $nextPostId: String
+  ) {
     site {
       siteMetadata {
         title
-        author
       }
     }
-    logoImage: file(absolutePath: { regex: "/logo/" }) {
-      childImageSharp {
-        fixed(width: 30, height: 30) {
-          ...GatsbyImageSharpFixed
-        }
-      }
-    }
-    markdownRemark(fields: { slug: { eq: $slug } }) {
+    markdownRemark(id: { eq: $id }) {
       id
       excerpt(pruneLength: 160)
       html
       frontmatter {
         title
-        subtitle
         date(formatString: "MMMM DD, YYYY")
         description
+      }
+    }
+    previous: markdownRemark(id: { eq: $previousPostId }) {
+      fields {
+        slug
+      }
+      frontmatter {
+        title
+      }
+    }
+    next: markdownRemark(id: { eq: $nextPostId }) {
+      fields {
+        slug
+      }
+      frontmatter {
+        title
       }
     }
   }

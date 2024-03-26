@@ -1,79 +1,56 @@
 /**
  * Bio component that queries for data
- * with Gatsby's StaticQuery component
+ * with Gatsby's useStaticQuery component
  *
- * See: https://www.gatsbyjs.org/docs/static-query/
+ * See: https://www.gatsbyjs.com/docs/how-to/querying-data/use-static-query/
  */
 
-import React from "react"
-import { StaticQuery, graphql } from "gatsby"
-import Image from "gatsby-image"
+import * as React from "react"
+import { useStaticQuery, graphql } from "gatsby"
+import { StaticImage } from "gatsby-plugin-image"
 
-class Bio extends React.Component {
-  constructor(props){
-    super(props)
-    this.handleClick = this.handleClick.bind(this)
-  }
+const Bio = () => {
+  const data = useStaticQuery(graphql`
+    query BioQuery {
+      site {
+        siteMetadata {
+          author {
+            name
+            summary
+          }
+          social {
+            twitter
+          }
+        }
+      }
+    }
+  `)
 
-  handleClick() {
-    document.querySelector('.bio__content').classList.toggle('bio__content--active')
-  }
+  // Set these values by editing "siteMetadata" in gatsby-config.js
+  const author = data.site.siteMetadata?.author
+  const social = data.site.siteMetadata?.social
 
-  render(){
-    return (
-      <StaticQuery
-        query={bioQuery}
-        render={data => {
-          const { author } = data.site.siteMetadata
-          const location = this.props.location ? this.props.location : ''
-          const classes = `bio ${location}`
-          return (
-            <div>
-              <div className={classes} onClick={this.handleClick}>
-                <Image
-                  fixed={data.avatar.childImageSharp.fixed}
-                  alt={author}
-                  style={{
-                    marginBottom: 0,
-                    minWidth: 35,
-                    borderRadius: `100%`,
-                  }}
-                  imgStyle={{
-                    borderRadius: `50%`,
-                  }}
-                  className="bio__image"
-                />
-  
-                <div className="bio__content">
-                  Written by <a target="_blank" rel="noopener noreferrer" href="http://jamigibbs.com">{author}</a> who lives and works in Chicago as a developer. &nbsp; <a target="_blank" rel="noopener noreferrer" href="https://hachyderm.io/@jamigibbs"> You should follow her on Mastodon</a> 👋
-                </div>
-              </div>
-            </div>
-          )
-        }}
+  return (
+    <div className="bio">
+      <StaticImage
+        className="bio-avatar"
+        layout="fixed"
+        formats={["auto", "webp", "avif"]}
+        src="../images/profile-pic.jpg"
+        width={50}
+        height={50}
+        quality={95}
+        alt="Profile picture"
       />
-    )
-  }
+      {author?.name && (
+        <p>
+          Written by <a href="https://www.jamigibbs.com/">{author.name}</a> {author?.summary || null}
+          {` `}
+            You should follow her on <a href={`https://hachyderm.io/@${social?.twitter || ``}`}>Mastodon</a> and <a href="https://www.instagram.com/jgibbs.co/">Instagram</a> 👋🏻
+        </p>
+      )}
+    </div>
+  )
 }
-
-const bioQuery = graphql`
-  query BioQuery {
-    avatar: file(absolutePath: { regex: "/profile-pic.jpg/" }) {
-      childImageSharp {
-        fixed(width: 35, height: 35) {
-          ...GatsbyImageSharpFixed
-        }
-      }
-    }
-    site {
-      siteMetadata {
-        author
-        social {
-          twitter
-        }
-      }
-    }
-  }
-`
 
 export default Bio
