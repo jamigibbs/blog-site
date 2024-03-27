@@ -46,7 +46,7 @@ const Bio = () => {
         <p>
           Hello!👋🏻 I'm <a href="https://www.jamigibbs.com/">{author.name}</a>. {author?.summary || null}
           {` `}
-            You can follow me here or on <a href={`https://hachyderm.io/@${social?.twitter || ``}`}>Mastodon</a> and <a href="https://www.instagram.com/jgibbs.co/">Instagram</a> 
+            You can follow me here, on <a href={`https://hachyderm.io/@${social?.twitter || ``}`}>Mastodon</a>, or <a href="https://www.instagram.com/jgibbs.co/">Instagram</a> 
         </p>
       )}
     </div>

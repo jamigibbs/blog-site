@@ -14,7 +14,7 @@ module.exports = {
       name: `Jami Gibbs`,
       summary: `I live and work in Chicago as a software developer and woodworker.`,
     },
-    description: `A blog with stuff written by Jami`,
+    description: `Word stuff written by Jami`,
     siteUrl: `https://blog.jamigibbs.com/`,
     social: {
       twitter: `jamigibbs`,
